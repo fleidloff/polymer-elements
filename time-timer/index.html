@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="/time-timer/time-timer.html" />
+  </head>
+  <body>
+    <div style="width: 200px; height: 200px;">
+        <time-timer minutes="5" seconds="0" id="t" class="foo" />
+    </div>
+    <script>
+        document.getElementById("t").addEventListener("done", function() {
+            console.log("doooone");
+        });
+        setTimeout(function() {
+            var tt = document.getElementById("t");
+            tt.setAttribute("minutes", 1);
+            tt.setAttribute("seconds", 9);
+        }, 5000);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,169 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+
+<dom-module id="time-timer">
+  <template>
+    <style>
+      #tt {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        margin: 40px;
+      }
+      #tt .circle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        border-radius: 50%;
+        background-color: white;
+        border: 1px solid black;
+      } 
+
+      #tt .red-circle {
+        opacity: .7;
+      }
+
+      #tt .watch-face {
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #tt .watch-face .remaining {
+        text-shadow: 1px 1px white;
+        font-size: 25px
+      }
+    </style>
+
+    <div id="tt">
+      <div class="circle red-circle"></div>
+      <div class="watch-face">
+        <span class="remaining">0:00</span>  
+      </div>
+    </div>
+
+  </template>
+
+  <script>
+    var _ = undefined;
+    Polymer({
+      is: "time-timer",
+      properties: {
+        minutes: {
+          type: Number,
+          value: 0
+        },
+        seconds: {
+          type: Number,
+          value: 0
+        }
+      },
+      attributeChanged: function(attribute, o, n) {
+        if (typeof this.tt !== "function") {
+          return;
+        }
+        switch(attribute) {
+          case "minutes": 
+            this.tt(n, _);  
+            break;
+          case "seconds":
+            this.tt(_, n);
+            break;
+        }
+      },
+      detached: function(_) {
+        console.log("detached", _);
+        this.tt(_, _, true);
+      },
+      attached: function(_) {
+        this.tt = timeTimer(function() {
+          this.fire("done");
+        }.bind(this));
+        this.tt(this.minutes, this.seconds);
+      },
+      ready: function() {
+        circle = this.$$("#tt .red-circle");
+        remaining = this.$$("#tt .remaining");
+      }
+    });
+
+    var circle, remaining;
+    function setTime(mins, secs) {
+      if (mins < 0) {
+        mins = 0;
+        secs = 0;
+      }
+      
+      minutes = mins + (secs / 60);
+      
+      var style = "linear-gradient(-90deg, transparent 50%, red 50%), linear-gradient(-90deg, red 50%, transparent 50%)";
+      var degrees = 0;
+      
+      switch(true) {
+        case minutes > 60:
+          break;
+        case minutes >= 30:
+          degrees = Math.ceil(90 - ((minutes - 30) * 6));
+          style = "linear-gradient(-90deg, transparent 50%, red 50%), linear-gradient(" + degrees + "deg, red 50%, transparent 50%)";
+          break;
+        case minutes < 30:
+          degrees = Math.ceil(90 - (minutes * 6));
+          style = "linear-gradient(90deg, transparent 50%, white 50%), linear-gradient(" + degrees + "deg, transparent 50%, red 50%)";
+          break;
+        case minutes <= 0:
+          style = "linear-gradient(90deg, red 50%, transparent 50%), linear-gradient(90deg, transparent 50%, red 50%)";
+          break;
+      }
+      
+      circle.style["background-image"] = style;
+      remaining.innerHTML = mins + ":" + (secs < 10 ? "0" + secs : secs);
+    }
+
+    function timeTimer(done) {
+      var start, nextTick, seconds=0, minutes=0, running=false;
+      
+      function waitAndReduceByOne(wait) {
+        setTimeout(function() {
+          nextTick += 1000;
+          seconds -= 1;
+          if (seconds < 0) {
+            seconds = 59;
+            minutes -= 1;
+          }
+          setTime(minutes, seconds);
+          if (minutes > 0 || seconds > 0) {
+            waitAndReduceByOne(nextTick - (new Date().getTime()));
+          } else {
+            running = false; 
+            done();
+          }
+        }, wait);  
+      }
+      
+      return function update(m, s, detach) {
+        if (detach) {
+          running = false;
+          return;
+        }
+        minutes = m || minutes || 0;
+        seconds = s || seconds || 0;
+        setTime(minutes, seconds);
+        if(!running) {
+          waitAndReduceByOne(1000, true);
+          start = new Date().getTime();
+          nextTick = start + 1000;
+          running= true;
+        }
+      }
+    };
+
+  </script>
+
+</dom-module>
