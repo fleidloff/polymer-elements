@@ -1,1 +1,1 @@
-google-chrome http://localhost:8003/time-timer/ && watch-http-server -p 8003
+google-chrome http://localhost:8003/chocolate-bars/ && watch-http-server -p 8003

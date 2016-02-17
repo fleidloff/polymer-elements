@@ -1,0 +1,59 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+
+<dom-module id="cb-bar">
+  <template>
+    <style>
+      #cb-bar .wrapper {
+        position: relative;
+        height: var(--line-height, 14px);
+        margin: 5px;
+      }
+      .bar {
+        width: var(--width, 0);
+        background-color: var(--color, #ccc);
+        position: absolute;
+        height: 100%;
+      }  
+      .content {
+        padding-left: 5px;
+        position: absolute;
+        line-height: var(--line-height, 14px);
+        font-size: var(--font-size, 12px);
+        white-space: nowrap;
+      }
+    </style>
+
+    <div id="cb-bar">
+      <div class="wrapper">
+        <div class="bar"/>
+        <div class="content">
+              {{title}} - {{value}}<br />
+        </div>
+      </div>
+    </div>
+
+  </template>
+
+  <script>
+    var _ = undefined;
+    Polymer({
+      is: "cb-bar",
+      properties: {
+        value: Number,
+        max: Number,
+        title: String,
+        total: Number,
+        color: String,
+        config: Object
+      },
+      ready: function() {
+        this.customStyle["--line-height"] = this.config["line-height"];
+        this.customStyle["--font-size"] = this.config["font-size"];
+        this.customStyle["--color"] = this.color;
+        this.customStyle["--width"] = (this.value * 100 / this.max) + "%";
+        this.value = Math.floor((this.value * 100 / this.total)) + "%";
+      }
+    });
+  </script>
+
+</dom-module>
